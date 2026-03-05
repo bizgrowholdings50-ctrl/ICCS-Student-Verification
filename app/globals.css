@@ -18,9 +18,40 @@
     --foreground: #ededed;
   }
 }
+@media print {
+  /* Step 1: Hide everything including parent containers */
+  html, body {
+    height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body * {
+    visibility: hidden;
+  }
+
+  /* Step 2: Show only the certificate card */
+  #certificate-to-print,
+  #certificate-to-print * {
+    visibility: visible;
+  }
+
+  #certificate-to-print {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 297mm !important; /* Force A4 Landscape Width */
+    height: 210mm !important; /* Force A4 Landscape Height */
+    background: white !important;
+    z-index: 99999;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  /* Force landscape mode */
+  @page {
+    size: landscape;
+    margin: 0;
+  }
 }
