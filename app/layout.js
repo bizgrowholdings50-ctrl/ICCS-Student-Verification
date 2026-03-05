@@ -7,6 +7,10 @@ import { Toaster } from 'sonner';
 export const metadata = {
   title: 'ICCS | Certificate Verification Portal',
   description: 'Official Student Verification System for ICCS College',
+  icons: {
+    icon: "/iccs-logo-rounded-og.png", // Aapka logo file path
+    apple: "/iccs-logo-rounded-og.png",
+  },
 };
 
 export default function RootLayout({ children }) {
