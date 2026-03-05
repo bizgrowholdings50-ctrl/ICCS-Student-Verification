@@ -12,9 +12,7 @@ export default function AdminDashboard() {
   const [formData, setFormData] = useState({
     roll_no: '',
     student_name: '',
-    father_name: '',
     course: '',
-    grade: '',
     session: ''
   });
 
@@ -60,8 +58,8 @@ export default function AdminDashboard() {
       loading: 'Uploading record to ICCS database...',
       success: () => {
         setFormData({ 
-          roll_no: '', student_name: '', father_name: '', 
-          course: '', grade: '', session: '' 
+          roll_no: '', student_name: '',  
+          course: '',  session: '' 
         });
         setLoading(false);
         return 'Student record has been successfully saved! 🚀';
@@ -124,19 +122,19 @@ export default function AdminDashboard() {
 
           <div className="mb-10">
             <h1 className="text-3xl font-black text-[#12066a]">Add Student</h1>
-            <p className="text-slate-400 mt-1">Fill in the details to generate a digital certificate.</p>
+            <p className="text-slate-500 mt-1">Fill in the details to generate a digital certificate.</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-5">
             {Object.keys(formData).map((key) => (
               <div key={key}>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 ml-1">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
                   {key.replace('_', ' ')}
                 </label>
                 <input
                   type="text"
                   required
-                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-slate-300"
+                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-slate-500"
                   placeholder={`Enter ${key.replace('_', ' ')}...`}
                   value={formData[key]}
                   onChange={(e) => setFormData({...formData, [key]: e.target.value})}
