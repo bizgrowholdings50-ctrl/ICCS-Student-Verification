@@ -36,7 +36,37 @@ export default function VerifyStudent() {
     };
     if (id) fetchStudent();
   }, [id]);
+const getCourseDescription = (courseName) => {
+  const course = courseName?.toLowerCase() || "";
 
+  // 1. Pehle Supply Chain/Logistics ko check karein (Kyunke ye aapka main course hai)
+  if (course.includes("supply chain") || course.includes("logistics") || course.includes("procurement")) {
+    return "This program is designed to develop practical and strategic expertise in global logistics, procurement, operations, and supply chain optimisation.";
+  }
+
+  // 2. Phir IT/AI/Computer Science ko check karein
+  if (course.includes("it support") || course.includes("computer") || course.includes("ai")) {
+    return "This program is designed to develop technical proficiency in digital systems, emerging technologies, and computational problem-solving.";
+  }
+
+  // 3. Management aur Accounting
+  if (course.includes("management") || course.includes("hr") || course.includes("accounting") || course.includes("finance")) {
+    return "This program is designed to develop strategic leadership, organizational management, and professional expertise in business operations.";
+  }
+
+  // 4. Beauty aur Aesthetic
+  if (course.includes("aesthetic") || course.includes("beauty")) {
+    return "This program provides advanced practical training in aesthetic sciences, beauty therapy, and professional wellness standards.";
+  }
+
+  // 5. English Language
+  if (course.includes("english") || course.includes("language")) {
+    return "This program focuses on advanced linguistic competence, professional communication, and global language proficiency.";
+  }
+  
+  // Default line agar kuch bhi match na ho
+  return "This professional certification program is designed to provide industry-standard expertise and practical knowledge in the field.";
+};
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -66,6 +96,7 @@ export default function VerifyStudent() {
                 
                 {/* Certificate Container */}
                 <div 
+                  id="certificate-to-print"
                   className="relative w-[900px] h-[820px] bg-white overflow-hidden flex-shrink-0"
                   style={{ fontFamily: "'Times New Roman', serif" }}
                 >
@@ -105,7 +136,7 @@ export default function VerifyStudent() {
                       <p className="text-[#997819] text-[22px] font-serif font-light">For successfully completing the professional certification program</p>
                       <h4 className="text-[26px] font-black font-serif text-[#b89146] mt-2 mb-2 uppercase">{studentData.course}</h4>
                       <p className="text-black text-[15px] leading-relaxed font-light px-10">
-                        This program is designed to develop practical and strategic expertise in global logistics, procurement, operations, and supply chain optimization.
+                        {getCourseDescription(studentData.course)}
                       </p>
                     </div>
 

@@ -18,40 +18,56 @@
     --foreground: #ededed;
   }
 }
+@import "tailwindcss";
+
 @media print {
-  /* Step 1: Hide everything including parent containers */
-  html, body {
-    height: 100vh;
+  /* 1. Page Setup Force Landscape */
+  @page {
+    size: A4 landscape !important;
+    margin: 0 !important;
+  }
+
+  /* 2. Hide EVERYTHING on the page */
+  html, body, #__next, main, nav, section, footer, button {
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important; /* Flexbox khatam karo */
   }
 
-  body * {
-    visibility: hidden;
+  body > * {
+    display: none !important; /* Baaki sab gayab */
   }
 
-  /* Step 2: Show only the certificate card */
-  #certificate-to-print,
-  #certificate-to-print * {
-    visibility: visible;
-  }
-
-  #certificate-to-print {
-    position: fixed !important;
+  /* 3. Force Show ONLY the Certificate Container */
+  /* Ensure your id is exactly 'certificate-container' */
+  #certificate-container {
+    display: block !important;
+    visibility: visible !important;
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 297mm !important; /* Force A4 Landscape Width */
-    height: 210mm !important; /* Force A4 Landscape Height */
-    background: white !important;
-    z-index: 99999;
+    width: 297mm !important; 
+    height: 210mm !important;
+    z-index: 999999 !important;
     margin: 0 !important;
-    border: none !important;
+    transform: none !important; /* Scale wagaira reset */
   }
 
-  /* Force landscape mode */
-  @page {
-    size: landscape;
-    margin: 0;
+  /* 4. Show all children of certificate */
+  #certificate-container * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 5. Background Image Fix */
+  #certificate-container img {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 }
