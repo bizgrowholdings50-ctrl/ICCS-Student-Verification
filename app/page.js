@@ -41,19 +41,78 @@ export default function Home() {
 
   const getCourseDescription = (courseName) => {
     const course = courseName?.toLowerCase() || "";
-    if (course.includes("it support") || course.includes("computer") || course.includes("ai")) {
-      return "This program is designed to develop technical proficiency in digital systems, emerging technologies, and computational problem-solving.";
+
+    // 1. IT Support (DITS)
+    if (course.includes("it support") || course.includes("dits")) {
+      return (
+        <span>
+          This diploma is awarded in recognition of the successful completion of
+          the six-month <strong>Diploma in IT Support (DITS)</strong>,
+          demonstrating professional knowledge in computer systems, technical
+          troubleshooting, network support, software installation, and IT
+          service management.
+        </span>
+      );
     }
-    return "This program is designed to develop practical and strategic expertise in professional operations.";
+
+    // 2. Supply Chain Management (DSCM)
+    if (course.includes("supply chain") || course.includes("dscm")) {
+      return (
+        <span>
+          This diploma is awarded in recognition of the successful completion of
+          the six-month{" "}
+          <strong>Diploma in Supply Chain Management (DSCM)</strong>,
+          demonstrating professional knowledge in global logistics, procurement,
+          operations, and supply chain optimisation.
+        </span>
+      );
+    }
+
+    // 3. Digital Marketing (Optional - Professional backup)
+    if (course.includes("marketing") || course.includes("digital")) {
+      return (
+        <span>
+          This diploma is awarded in recognition of the successful completion of
+          the six-month <strong>Diploma in Digital Marketing</strong>,
+          demonstrating professional expertise in SEO, social media strategy,
+          content creation, and digital analytics.
+        </span>
+      );
+    }
+
+    // Default Professional Line
+    return (
+      <span>
+        This certificate is awarded in recognition of the successful completion
+        of the prescribed professional program, demonstrating competence in
+        industry-standard practices and specialized knowledge within the field
+        of <strong>{courseName}</strong>.
+      </span>
+    );
   };
 
+  const courseMap = {
+    "Deploma in IT Support": "DITS",
+    "Supply Chain Management": "CPSCM",
+    "Digital Marketing": "DDM",
+    "Graphic Designing": "DGD",
+    "Cyber Security": "DCS",
+    "Artificial Intelligence": "DAI",
+    "Data Science": "DDS",
+    "Web Development": "DWD",
+  };
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 🧠 SMART PRINT CSS: Isko mat chheriye ga, yehi asli magic hai */}
       <style jsx global>{`
         @media print {
-          body * { visibility: hidden; }
-          #certificate-container, #certificate-container * { visibility: visible; }
+          body * {
+            visibility: hidden;
+          }
+          #certificate-container,
+          #certificate-container * {
+            visibility: visible;
+          }
           #certificate-container {
             position: absolute;
             left: 0;
@@ -62,8 +121,14 @@ export default function Home() {
             margin: 0;
             padding: 0;
           }
-          @page { size: A4 landscape; margin: 0; }
-          div { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          @page {
+            size: A4 landscape;
+            margin: 0;
+          }
+          div {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
       `}</style>
 
@@ -75,7 +140,7 @@ export default function Home() {
             Secured Verification
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#12066a] mb-6 leading-tight">
-            Verify Academic <span className="text-[#997819]">Credentials</span>
+            Certificate <span className="text-[#997819]">Verification</span>
           </h1>
 
           <div className="relative max-w-2xl mx-auto group px-4">
@@ -99,28 +164,27 @@ export default function Home() {
         <div className="w-full mx-auto pb-24 flex flex-col items-center overflow-hidden">
           {studentData ? (
             <div className="relative w-full flex flex-col items-center">
-              
-                           {/* Floating Print Button */}
+              {/* Floating Print Button */}
               <button
                 onClick={() => window.print()}
                 className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] bg-[#12066a] hover:bg-[#b89146] text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 print:hidden flex items-center gap-2 text-sm md:text-base"
               >
-                <span className="text-lg md:text-xl">🖨️</span> Print Official Certificate
+                <span className="text-lg md:text-xl">🖨️</span> Print Official
+                Certificate
               </button>
 
-
               {/* 📱 Original Responsive Wrapper */}
-              <div className="w-full flex justify-center items-start pt-4 h-[380px] xs:h-[450px] sm:h-[600px] md:h-auto lg:h-auto overflow-hidden transition-all">
-                <div 
+              <div className="w-full flex justify-center items-start pt-4 h-[380px] xs:h-[450px] sm:h-[600px] md:h-auto lg:h-auto overflow-hidden print:overflow-visible print:h-auto">
+                <div
                   id="certificate-container"
                   className="origin-top scale-[0.38] xs:scale-[0.45] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 transition-transform duration-500 shadow-2xl"
                 >
                   {/* --- YOUR ORIGINAL DESIGN --- */}
                   <div
-                    className="relative bg-white flex-shrink-0"
+                    className="relative bg-white shrink-0"
                     style={{
                       width: "900px",
-                      height: "820px",
+                      height: "720px",
                       fontFamily: "'Times New Roman', serif",
                     }}
                   >
@@ -133,13 +197,19 @@ export default function Home() {
                     <div className="relative z-10 h-full w-full flex flex-col items-center pt-16 px-28">
                       {/* Header */}
                       <div className="flex justify-center items-start w-full mb-8 px-8 gap-6">
-                        <img src="/iccs-logo-rounded-remove.png" alt="Logo" className="w-28 object-contain" />
+                        <img
+                          src="/iccs-logo-rounded-remove.png"
+                          alt="Logo"
+                          className="w-28 object-contain"
+                        />
                         <div className="text-center mt-2">
-                          <h1 className="text-[28px] font-black text-[#12066a] leading-none uppercase tracking-tighter">
+                          <h1 className="text-[28px] font-black font-serif text-[#12066a] leading-none  tracking-tighter">
                             International College of <br />
-                            <span className="text-[26px]">Contemporary Sciences</span>
+                            <span className="text-[26px]">
+                              Contemporary Sciences
+                            </span>
                           </h1>
-                          <p className="text-[#b89146] italic font-extrabold text-[10px] tracking-[0.25em] mt-1">
+                          <p className="text-[#b89146]  font-extrabold text-[12px] border-t border-black tracking-[0.25em] mt-1">
                             Knowledge for A Global Future
                           </p>
                         </div>
@@ -147,55 +217,99 @@ export default function Home() {
 
                       {/* Content */}
                       <div className="text-center mb-4">
-                        <h2 className="text-[28px] font-black font-serif text-[#12066a] uppercase tracking-[0.05em]">
-                          Certified Professional in <span className="text-[#997819]">{studentData.course}</span>
+                        <h2 className="text-[25px] font-black text-[#997819] tracking-[0.05em]">
+                          Certified Professional in{" "}
+                          <span className="text-[#997819]">
+                            {studentData.course}
+                            {courseMap[studentData.course]
+                              ? ` (${courseMap[studentData.course]})`
+                              : ""}
+                          </span>
                         </h2>
-                        <p className="text-[#b89146] text-[20px] font-bold mt-3">This certificate is proudly awarded to</p>
-                        <h2 className="text-4xl text-[#12066a] font-semibold pt-2 pb-6">{studentData.name}</h2>
+                        <p className="text-[#997819] text-[25px] font-black ">
+                          This diploma is proudly awarded to
+                        </p>
+                        <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-2 pb-6">
+                          {studentData.name}
+                        </h2>
                       </div>
 
                       {/* Decorative Line 1 */}
-                      <div className="relative w-full flex items-center justify-center -mt-6 mb-10">
+                      <div className="relative w-full flex items-center justify-center -mt-4 mb-4">
                         <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-[#b89146] to-[#b89146]"></div>
-                        <div className="mx-2 flex-shrink-0"><div className="w-3 h-3 bg-[#b89146] rounded-full"></div></div>
+                        <div className="mx-2 flex-shrink-0">
+                          <div className="w-3 h-3 bg-[#b89146] rounded-full"></div>
+                        </div>
                         <div className="h-[3px] w-full bg-gradient-to-l from-transparent via-[#b89146] to-[#b89146]"></div>
                       </div>
 
-                      <div className="text-center max-w-3xl">
-                        <p className="text-[#997819] text-[22px] font-serif font-light">For successfully completing the professional certification program in</p>
-                        <h4 className="text-[26px] font-black font-serif text-[#b89146] mt-2 mb-2 uppercase">{studentData.course}</h4>
-                        <p className="text-black text-[15px] leading-relaxed font-light px-10">{getCourseDescription(studentData.course)}</p>
+                      <div className="text-center max-w-4xl">
+                        <p className="text-black text-[17px] leading-relaxed font-light px-10">
+                          {getCourseDescription(studentData.course)}
+                        </p>
                       </div>
 
                       {/* Decorative Line 2 */}
-                      <div className="relative w-full flex items-center justify-center mt-15">
+                      <div className="relative w-full flex items-center justify-center mt-4">
                         <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-[#b89146] to-[#b89146]"></div>
-                        <div className="mx-2 flex-shrink-0"><div className="w-3 h-3 bg-[#b89146] rounded-full"></div></div>
+                        <div className="mx-2 flex-shrink-0">
+                          <div className="w-3 h-3 bg-[#b89146] rounded-full"></div>
+                        </div>
                         <div className="h-[3px] w-full bg-gradient-to-l from-transparent via-[#b89146] to-[#b89146]"></div>
                       </div>
 
-                      {/* Footer Grid */}
-                      <div className="grid grid-cols-4 w-full px-12 mt-auto pb-22 text-center items-end relative">
-                        <div className="pb-4 text-left">
-                          <p className="text-[12px] font-black text-[#997819]">ISSUED BY:</p>
-                          <p className="font-bold text-[#12066a] text-[11px]">ICCS - International College</p>
+                      {/* Footer Grid - Top Alignment Fixed */}
+                      <div className="grid grid-cols-[1fr_1fr_1fr_0.5fr] w-full px-12 pt-4 text-center items-start relative">
+                        {/* 1. Authorised Signature - Top se align */}
+                        <div className="text-left flex flex-col items-start">
+                          <p className="text-[11px] font-black text-[#997819] uppercase tracking-tighter mb-1">
+                            Authorised Signature:
+                          </p>
+                          <div className="relative flex flex-col items-start">
+                            <img
+                              src="/signature.png"
+                              alt="A. Isaac Signature"
+                              className="h-8 object-contain mb-[-4px] ml-2"
+                            />
+                            <div className="h-[1.5px] w-30 bg-[#b89146]/60 mb-1"></div>
+                            <p className="font-bold text-[#12066a] text-[10px] whitespace-nowrap">
+                              A. Isaac, Centre Manager
+                            </p>
+                          </div>
                         </div>
-                        <div className="pb-4 border-l-3 border-black/40 flex flex-col">
-                          <p className="text-[12px] font-black text-[#997819]">DATE:</p>
-                          <p className="font-bold text-[#12066a] text-[11px]">{studentData.date_issued || "04/03/2026"}</p>
+
+                        {/* 2. Issue Date - pb-4 hataya taake top se align ho */}
+                        <div className="border-l-2 border-black flex flex-col items-center">
+                          <p className="text-[12px] font-black text-[#997819] font-serif leading-tight">
+                            ISSUE DATE:
+                          </p>
+                          <p className="font-bold text-black text-[13.5px] mt-1">
+                            {studentData.date_issued || "04/03/2026"}
+                          </p>
                         </div>
-                        <div className="pb-4 border-l-3 border-black/40 flex flex-col">
-                          <p className="text-[12px] font-black text-[#997819]">ID:</p>
-                          <p className="font-bold text-[#12066a] text-[11px]">{studentData.id}</p>
+
+                        {/* 3. Certificate ID - pb-4 hataya taake top se align ho */}
+                        <div className="border-l-2 border-black flex flex-col items-center">
+                          <p className="text-[12px] font-black text-[#997819] font-serif leading-tight">
+                            CERTIFICATE ID:
+                          </p>
+                          <p className="font-bold text-black text-[13.5px] mt-1">
+                            {studentData.id}
+                          </p>
                         </div>
-                        <div className="flex justify-end">
-                          <div className="bg-white p-2 rounded-lg shadow-sm">
-                            <QRCodeSVG value={`https://iccs-student-verification.vercel.app/verify/${studentData.id}`} size={80} level={"H"} />
+
+                        {/* 4. QR Code - Top se align */}
+                        <div className="flex justify-end items-start">
+                          <div className="bg-white p-1.5 rounded-lg shadow-sm border border-slate-100">
+                            <QRCodeSVG
+                              value={`https://iccs-student-verification.vercel.app/verify/${studentData.id}`}
+                              size={57}
+                              level={"H"}
+                            />
                           </div>
                         </div>
                       </div>
-
-                      <div className="absolute bottom-12 flex gap-8 text-[#b89146] font-bold text-[13px] uppercase">
+                      <div className="absolute bottom-17 flex gap-8 text-[#b89146] font-bold text-[13px] uppercase">
                         <span>✓ Digitally Verifiable</span>
                         <span>✓ Industry-Oriented Certification</span>
                       </div>
@@ -207,7 +321,9 @@ export default function Home() {
             </div>
           ) : (
             <div className="h-96 flex flex-col items-center justify-start pt-20">
-              <p className="text-[#12066a] text-xl font-bold">Check Your Certificate's Authenticity with ICCS</p>
+              <p className="text-[#12066a] text-xl font-bold">
+                Check Your Certificate's Authenticity with ICCS
+              </p>
             </div>
           )}
         </div>
