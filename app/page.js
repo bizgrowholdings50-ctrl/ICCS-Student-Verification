@@ -4,10 +4,9 @@ import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import { QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
-import { toPng } from 'html-to-image';
-import { jsPDF } from 'jspdf';
+import { toPng } from "html-to-image";
+import { jsPDF } from "jspdf";
 import { toast } from "sonner";
-
 
 export default function Home() {
   const [rollNo, setRollNo] = useState("");
@@ -96,37 +95,41 @@ export default function Home() {
     );
   };
 
-const handleDownload = async () => {
-  const element = document.getElementById("certificate-container");
-  if (!element) {
-    toast.error("Certificate area not found!");
-    return;
-  }
+  const handleDownload = async () => {
+    const element = document.getElementById("certificate-container");
+    if (!element) {
+      toast.error("Certificate area not found!");
+      return;
+    }
 
-  const toastId = toast.loading("Generating high-quality PDF...");
+    const toastId = toast.loading("Generating high-quality PDF...");
 
-  try {
-    const dataUrl = await toPng(element, { 
-      quality: 1.0, 
-      pixelRatio: 2, 
-      cacheBust: true 
-    });
-    
-    const pdf = new jsPDF("l", "mm", "a4");
-    
-    // 🎯 Yahan 'student' variable ki jagah hum check karenge 
-    // ke aap ke paas koi bhi data variable majood hai ya nahi
-    const fileName = "ICCS_Certificate"; 
+    try {
+      const dataUrl = await toPng(element, {
+        quality: 1.0,
+        pixelRatio: 2,
+        cacheBust: true,
+      });
 
-    pdf.addImage(dataUrl, 'PNG', 0, 0, 297, 210);
-    pdf.save(`${fileName}.pdf`);
-    
-    toast.success("Certificate downloaded successfully!", { id: toastId });
-  } catch (err) {
-    console.error("PDF Error:", err);
-    toast.error("Download failed. Please try again.", { id: toastId });
-  }
-};
+      const pdf = new jsPDF("l", "mm", "a4");
+
+      // 🎯 Yahan 'student' variable ki jagah hum check karenge
+      // ke aap ke paas koi bhi data variable majood hai ya nahi
+      // 🎯 FIX: studentData mein keys 'id' aur 'name' hain, 'roll_no' ya 'student_name' nahi
+      const fileName = `${studentData?.id}_${studentData?.name?.replace(
+        /\s+/g,
+        "_"
+      )}`;
+
+      pdf.addImage(dataUrl, "PNG", 0, 0, 297, 210);
+      pdf.save(`${fileName}.pdf`);
+
+      toast.success("Certificate downloaded successfully!", { id: toastId });
+    } catch (err) {
+      console.error("PDF Error:", err);
+      toast.error("Download failed. Please try again.", { id: toastId });
+    }
+  };
   const courseMap = {
     "Deploma in IT Support": "DITS",
     "Supply Chain Management": "CPSCM",

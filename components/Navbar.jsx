@@ -35,7 +35,7 @@ export default function Navbar() {
         </div>
         {/* Right Side - Buttons */}
         <div className="flex items-center gap-3 md:gap-4">
-          <Link href="https://iccs.uk/">
+          <Link href="https://iccs.uk/ " target="_blank"  rel="noopener noreferrer">
             <div className="text-[10px] font-bold text-[#1a1a5e] cursor-pointer border border-[#b89146] px-4 py-2 rounded tracking-widest uppercase hover:bg-[#b89146] hover:text-white transition-all">
               Website
             </div>
