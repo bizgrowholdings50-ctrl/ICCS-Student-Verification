@@ -41,13 +41,13 @@ export default function Navbar() {
             </div>
           </Link>
           {/* Dashboard button sirf tab nazar aayega jab isAdmin true ho */}
-          {isAdmin && (
+         
             <Link href="/admin">
               <button className="bg-[#12066a] text-[12px] text-white px-4 py-2 rounded-md font-bold transition-all hover:bg-[#b89146] hover:text-white cursor-pointer shadow-md">
                 Dashboard
               </button>
             </Link>
-          )}
+        
         </div>
       </div>
     </nav>

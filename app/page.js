@@ -3,6 +3,11 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import { QRCodeSVG } from "qrcode.react";
+import html2canvas from "html2canvas";
+import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
+import { toast } from "sonner";
+
 
 export default function Home() {
   const [rollNo, setRollNo] = useState("");
@@ -91,6 +96,37 @@ export default function Home() {
     );
   };
 
+const handleDownload = async () => {
+  const element = document.getElementById("certificate-container");
+  if (!element) {
+    toast.error("Certificate area not found!");
+    return;
+  }
+
+  const toastId = toast.loading("Generating high-quality PDF...");
+
+  try {
+    const dataUrl = await toPng(element, { 
+      quality: 1.0, 
+      pixelRatio: 2, 
+      cacheBust: true 
+    });
+    
+    const pdf = new jsPDF("l", "mm", "a4");
+    
+    // 🎯 Yahan 'student' variable ki jagah hum check karenge 
+    // ke aap ke paas koi bhi data variable majood hai ya nahi
+    const fileName = "ICCS_Certificate"; 
+
+    pdf.addImage(dataUrl, 'PNG', 0, 0, 297, 210);
+    pdf.save(`${fileName}.pdf`);
+    
+    toast.success("Certificate downloaded successfully!", { id: toastId });
+  } catch (err) {
+    console.error("PDF Error:", err);
+    toast.error("Download failed. Please try again.", { id: toastId });
+  }
+};
   const courseMap = {
     "Deploma in IT Support": "DITS",
     "Supply Chain Management": "CPSCM",
@@ -166,11 +202,10 @@ export default function Home() {
             <div className="relative w-full flex flex-col items-center">
               {/* Floating Print Button */}
               <button
-                onClick={() => window.print()}
+                onClick={handleDownload}
                 className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] bg-[#12066a] hover:bg-[#b89146] text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-black shadow-2xl transition-all transform hover:scale-105 active:scale-95 print:hidden flex items-center gap-2 text-sm md:text-base"
               >
-                <span className="text-lg md:text-xl">🖨️</span> Print Official
-                Certificate
+                <span className="text-lg md:text-xl"></span> Download PDF
               </button>
 
               {/* 📱 Original Responsive Wrapper */}
@@ -229,7 +264,7 @@ export default function Home() {
                         <p className="text-[#997819] text-[25px] font-black ">
                           This diploma is proudly awarded to
                         </p>
-                        <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-2 pb-6">
+                        <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-4 pb-6">
                           {studentData.name}
                         </h2>
                       </div>
