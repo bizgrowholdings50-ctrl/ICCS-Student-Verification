@@ -12,7 +12,7 @@ export default function Home() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const handleVerify = async () => {
     if (!rollNo) return alert("Please enter a Roll Number");
     setLoading(true);
@@ -97,57 +97,37 @@ export default function Home() {
 
   const handleDownload = async () => {
     const element = document.getElementById("certificate-container");
-    if (!element) {
-      toast.error("Certificate area not found!");
-      return;
-    }
+    if (!element) return;
 
     const toastId = toast.loading("Generating high-quality PDF...");
 
     try {
       const dataUrl = await toPng(element, {
         quality: 1.0,
-        pixelRatio: 2.3, // Teammate ki resolution demand (2048px) ke liye 2.3 best hai
+        pixelRatio: 3, // High quality ke liye 3 rakhein
         cacheBust: true,
       });
 
+      // 'l' means Landscape, 'mm' means millimeters, 'a4' is the size
       const pdf = new jsPDF("l", "mm", "a4");
 
-      // 🎯 Ratio Calculate karein taake stretch na ho
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // 297mm
-      const pdfHeight = pdf.internal.pageSize.getHeight(); // 210mm
+      // A4 Landscape dimensions in mm
+      const pdfWidth = 297;
+      const pdfHeight = 210;
 
-      // Asli ratio ke mutabiq height nikalna
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      // 🚀 AddImage: 0, 0 position se edge-to-edge fit karein
+      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
 
-      // Agar image ki height A4 se zyada ho rahi ho toh adjust karein
-      let finalWidth = pdfWidth;
-      let finalHeight = imgHeight;
-
-      if (imgHeight > pdfHeight) {
-        finalHeight = pdfHeight;
-        finalWidth = (imgProps.width * pdfHeight) / imgProps.height;
-      }
-
-      // Center karne ke liye margins
-      const xOffset = (pdfWidth - finalWidth) / 2;
-      const yOffset = (pdfHeight - finalHeight) / 2;
-
-      // Dynamic FileName logic jo aapne set kiya tha
       const fileName = `${studentData?.id}_${studentData?.name?.replace(
         /\s+/g,
         "_"
       )}`;
-
-      // 🚀 Add Image with Correct Ratio (Ab stretch nahi hoga)
-      pdf.addImage(dataUrl, "PNG", xOffset, yOffset, finalWidth, finalHeight);
       pdf.save(`${fileName}.pdf`);
 
       toast.success("Certificate downloaded successfully! ✅", { id: toastId });
     } catch (err) {
       console.error("PDF Error:", err);
-      toast.error("Download failed. Please try again.", { id: toastId });
+      toast.error("Download failed.", { id: toastId });
     }
   };
   const courseMap = {
@@ -220,7 +200,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="w-full mx-auto pb-24 flex flex-col items-center overflow-hidden">
+        <div className="w-full mx-auto  pb-24 flex flex-col items-center overflow-hidden">
           {studentData ? (
             <div className="relative w-full flex flex-col items-center">
               {/* Floating Print Button */}
@@ -235,14 +215,14 @@ export default function Home() {
               <div className="w-full flex justify-center items-start pt-4 h-[380px] xs:h-[450px] sm:h-[600px] md:h-auto lg:h-auto overflow-hidden print:overflow-visible print:h-auto">
                 <div
                   id="certificate-container"
-                  className="origin-top scale-[0.38] xs:scale-[0.45] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 transition-transform duration-500 shadow-2xl"
+                  className="origin-top scale-[0.38]  xs:scale-[0.45] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 transition-transform duration-500 shadow-2xl"
                 >
                   {/* --- YOUR ORIGINAL DESIGN --- */}
                   <div
-                    className="relative bg-white shrink-0"
+                    className="relative bg-white shrink-0  overflow-hidden"
                     style={{
-                      width: "900px",
-                      height: "720px",
+                      width: "1123px", // A4 Landscape equivalent in pixels (at 96 DPI)
+                      height: "794px", // Exact A4 height
                       fontFamily: "'Times New Roman', serif",
                     }}
                   >

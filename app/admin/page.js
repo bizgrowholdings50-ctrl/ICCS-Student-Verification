@@ -31,9 +31,8 @@ export default function AdminDashboard() {
   const availableCourses = [
     "Diploma in IT Support",
     "Diploma in Supply Chain Management",
-    "Diploma in Digital Marketing",
-    "Diploma in Graphic Designing",
-  ];
+  
+];
 
   const ADMIN_PASSWORD = "ICCS_ADMIN_2026";
 
