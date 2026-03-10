@@ -12,7 +12,7 @@ export default function Home() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   const handleVerify = async () => {
     if (!rollNo) return alert("Please enter a Roll Number");
     setLoading(true);
@@ -255,7 +255,7 @@ export default function Home() {
 
                       {/* Content */}
                       <div className="text-center mb-4">
-                        <h2 className="text-[25px] font-black text-[#997819] tracking-[0.05em]">
+                        <h2 className="text-[29px] font-black text-[#997819] tracking-[0.05em]">
                           Certified Professional in{" "}
                           <span className="text-[#997819]">
                             {studentData.course}
@@ -264,7 +264,7 @@ export default function Home() {
                               : ""}
                           </span>
                         </h2>
-                        <p className="text-[#997819] text-[25px] font-black ">
+                        <p className="text-[#997819] text-[27px] font-black ">
                           This diploma is proudly awarded to
                         </p>
                         <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-4 pb-6">
