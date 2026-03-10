@@ -12,7 +12,7 @@ export default function Home() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   const handleVerify = async () => {
     if (!rollNo) return alert("Please enter a Roll Number");
     setLoading(true);
@@ -33,7 +33,7 @@ export default function Home() {
           course: data.course,
           id: data.roll_no,
           certificate_id: data.certificate_id,
-          date_issued: data.date_issued,
+          date_issued: data.issue_date || "Not Set",
         });
       }
     } catch (err) {
@@ -107,31 +107,51 @@ export default function Home() {
     try {
       const dataUrl = await toPng(element, {
         quality: 1.0,
-        pixelRatio: 2,
+        pixelRatio: 2.3, // Teammate ki resolution demand (2048px) ke liye 2.3 best hai
         cacheBust: true,
       });
 
       const pdf = new jsPDF("l", "mm", "a4");
 
-      // 🎯 Yahan 'student' variable ki jagah hum check karenge
-      // ke aap ke paas koi bhi data variable majood hai ya nahi
-      // 🎯 FIX: studentData mein keys 'id' aur 'name' hain, 'roll_no' ya 'student_name' nahi
+      // 🎯 Ratio Calculate karein taake stretch na ho
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 297mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 210mm
+
+      // Asli ratio ke mutabiq height nikalna
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      // Agar image ki height A4 se zyada ho rahi ho toh adjust karein
+      let finalWidth = pdfWidth;
+      let finalHeight = imgHeight;
+
+      if (imgHeight > pdfHeight) {
+        finalHeight = pdfHeight;
+        finalWidth = (imgProps.width * pdfHeight) / imgProps.height;
+      }
+
+      // Center karne ke liye margins
+      const xOffset = (pdfWidth - finalWidth) / 2;
+      const yOffset = (pdfHeight - finalHeight) / 2;
+
+      // Dynamic FileName logic jo aapne set kiya tha
       const fileName = `${studentData?.id}_${studentData?.name?.replace(
         /\s+/g,
         "_"
       )}`;
 
-      pdf.addImage(dataUrl, "PNG", 0, 0, 297, 210);
+      // 🚀 Add Image with Correct Ratio (Ab stretch nahi hoga)
+      pdf.addImage(dataUrl, "PNG", xOffset, yOffset, finalWidth, finalHeight);
       pdf.save(`${fileName}.pdf`);
 
-      toast.success("Certificate downloaded successfully!", { id: toastId });
+      toast.success("Certificate downloaded successfully! ✅", { id: toastId });
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Download failed. Please try again.", { id: toastId });
     }
   };
   const courseMap = {
-    "Deploma in IT Support": "DITS",
+    "Diploma in IT Support": "DITS", // "Deploma" ko "Diploma" kiya
     "Supply Chain Management": "CPSCM",
     "Digital Marketing": "DDM",
     "Graphic Designing": "DGD",
@@ -322,7 +342,7 @@ export default function Home() {
                             ISSUE DATE:
                           </p>
                           <p className="font-bold text-black text-[13.5px] mt-1">
-                            {studentData.date_issued || "04/03/2026"}
+                            {studentData.date_issued}
                           </p>
                         </div>
 

@@ -8,37 +8,31 @@ export default function AdminDashboard() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [lastEntry, setLastEntry] = useState(null);
-  
-  // 1. FormData matched with DB columns
+  const [myPersonalLastEntry, setMyPersonalLastEntry] = useState(null); // 🎯 Personal Tracking
+
   const [formData, setFormData] = useState({
-    roll_no: '', 
-    student_name: '',
-    course: '',
-    session: ''
+    roll_no: "",
+    student_name: "",
+    course: "",
+    session: "",
+    issue_date: "", // 🎯 DB column se match kiya
   });
 
-  // 2. Fetch Latest Record for the Alert Box
-  const fetchLastId = async () => {
-    const { data, error } = await supabase
-      .from("student")
-      .select("roll_no, student_name") // roll_no use kiya hai
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (data) setLastEntry(data);
-  };
-
   useEffect(() => {
-    fetchLastId();
     const authStatus = localStorage.getItem("iccs_admin_auth");
     if (authStatus === "true") setIsLoggedIn(true);
+
+    // 🎯 LOCAL STORAGE: Page load par apna aakhri record uthao
+    const saved = localStorage.getItem("myLastEntry");
+    if (saved) setMyPersonalLastEntry(JSON.parse(saved));
   }, []);
 
+  // Professional course list with correct spellings
   const availableCourses = [
-    "Diploma in IT Support", // Spelling fixed from 'Deploma'
-    "Certified Professional in Supply Chain Management",
+    "Diploma in IT Support",
+    "Diploma in Supply Chain Management",
+    "Diploma in Digital Marketing",
+    "Diploma in Graphic Designing",
   ];
 
   const ADMIN_PASSWORD = "ICCS_ADMIN_2026";
@@ -48,7 +42,7 @@ export default function AdminDashboard() {
     if (password === ADMIN_PASSWORD) {
       localStorage.setItem("iccs_admin_auth", "true");
       setIsLoggedIn(true);
-      toast.success("Access Granted! Welcome to ICCS Admin Panel.");
+      toast.success("Access Granted!");
     } else {
       toast.error("Invalid Admin Password.");
     }
@@ -57,36 +51,61 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("iccs_admin_auth");
     setIsLoggedIn(false);
-    toast.success("Logged out successfully.");
+    toast.success("Logged out.");
   };
-
-  // 3. Updated Submission with Duplicate Check
+  const formatDateForDB = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`; // Format: 10/03/2026
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Step A: Check for existing roll_no
+      // 🎯 Date ko convert karein bhejney se pehle
+      const finalData = {
+        ...formData,
+        roll_no: formData.roll_no.trim().toUpperCase(),
+        issue_date: formatDateForDB(formData.issue_date),
+      };
+
+      // Duplicate Check
       const { data: duplicate } = await supabase
-        .from('student')
-        .select('roll_no')
-        .eq('roll_no', formData.roll_no)
+        .from("student")
+        .select("roll_no")
+        .eq("roll_no", finalData.roll_no)
         .maybeSingle();
 
       if (duplicate) {
-        toast.error(`ID: ${formData.roll_no} is already registered!`);
+        toast.error(`ID: ${finalData.roll_no} already exists!`);
         setLoading(false);
         return;
       }
 
-      // Step B: Insert unique record
-      const { error: insertError } = await supabase.from('student').insert([formData]);
+      // Insert with formatted date
+      const { error: insertError } = await supabase
+        .from("student")
+        .insert([finalData]);
 
       if (insertError) throw insertError;
 
-      toast.success('Student record saved successfully! ✅');
-      setFormData({ roll_no: '', student_name: '', course: '', session: '' });
-      fetchLastId(); // Refresh the "Last Record" alert
+      // Local Storage update
+      const personalRecord = {
+        id: finalData.roll_no,
+        name: finalData.student_name,
+      };
+      localStorage.setItem("myLastEntry", JSON.stringify(personalRecord));
+      setMyPersonalLastEntry(personalRecord);
+
+      toast.success("Record saved with correct date format! ✅");
+      setFormData({
+        roll_no: "",
+        student_name: "",
+        course: "",
+        session: "",
+        issue_date: "",
+      });
     } catch (err) {
       toast.error("Error: " + err.message);
     } finally {
@@ -95,96 +114,139 @@ export default function AdminDashboard() {
   };
 
   if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
-        <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-slate-200">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-black text-[#12066a]">Admin Login</h1>
-            <p className="text-slate-400 text-sm mt-2">Enter credentials to manage records</p>
-          </div>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              placeholder="Enter Admin Password"
-              className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:border-[#12066a] outline-none transition-all"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button type="submit" className="w-full bg-[#12066a] hover:bg-[#997819] text-white py-4 rounded-2xl font-bold transition-all shadow-lg">
-              Login to Dashboard
-            </button>
-          </form>
-        </div>
-      </div>
-    );
+    // ... aapka login UI (same rahega)
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-
       <div className="max-w-2xl mx-auto pt-32 pb-20 px-6">
         <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 relative">
-          <button onClick={handleLogout} className="absolute top-6 right-8 text-xs bg-red-50 text-red-500 px-4 py-2 rounded-full font-bold hover:bg-red-500 hover:text-white transition-all">
+          <button
+            onClick={handleLogout}
+            className="absolute top-6 right-8 text-xs bg-red-50 text-red-500 px-4 py-2 rounded-full font-bold"
+          >
             Logout
           </button>
 
           <div className="mb-6">
             <h1 className="text-3xl font-black text-[#12066a]">Add Student</h1>
-            <p className="text-slate-500 mt-1">Generate a new digital certificate record.</p>
+            <p className="text-slate-500 mt-1">
+              ICCS Digital Record Management
+            </p>
           </div>
 
-          {/* 🚀 Dynamic Alert Box showing Previous ID */}
-          {lastEntry && (
-            <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex justify-between items-center shadow-sm border-l-4 border-l-[#12066a]">
+          {/* 🚀 PERSONAL ALERT BOX: Sirf aapka data dikhayega */}
+          {myPersonalLastEntry && (
+            <div className="mb-8 p-4 bg-blue-50 border-l-4 border-[#12066a] rounded-r-2xl flex justify-between items-center shadow-sm">
               <div>
-                <p className="text-[10px] font-black text-[#12066a] uppercase tracking-widest opacity-60">Last Record Entered:</p>
+                <p className="text-[10px] font-black text-[#12066a] uppercase tracking-widest opacity-60">
+                  Your Last Entry:
+                </p>
                 <p className="font-bold text-[#12066a] text-sm">
-                  ID: {lastEntry.roll_no} | {lastEntry.student_name}
+                  ID: {myPersonalLastEntry.id} | {myPersonalLastEntry.name}
                 </p>
               </div>
-              <div className="bg-[#12066a] text-white text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm">
-                Latest
+              <div className="bg-[#12066a] text-white text-[9px] px-3 py-1 rounded-full font-black uppercase">
+                Recent
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {Object.keys(formData).map((key) => (
-              <div key={key}>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
-                  {key === "roll_no" ? "Certificate ID (Roll No)" : key.replace("_", " ")}
-                </label>
+            {/* Roll No */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
+                Certificate ID (Roll No)
+              </label>
+              <input
+                type="text"
+                required
+                className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] outline-none"
+                placeholder="e.g. ICCS-010"
+                value={formData.roll_no}
+                onChange={(e) =>
+                  setFormData({ ...formData, roll_no: e.target.value })
+                }
+              />
+            </div>
 
-                {key === "course" ? (
-                  <select
-                    required
-                    className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] focus:ring-4 focus:ring-blue-50 outline-none transition-all cursor-pointer"
-                    value={formData[key]}
-                    onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
-                  >
-                    <option value="">Select Course...</option>
-                    {availableCourses.map((course, index) => (
-                      <option key={index} value={course}>{course}</option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-slate-400"
-                    placeholder={key === "roll_no" ? "e.g. ICCS-010" : `Enter ${key.replace("_", " ")}...`}
-                    value={formData[key]}
-                    onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
-                  />
-                )}
+            {/* Student Name */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
+                Student Name
+              </label>
+              <input
+                type="text"
+                required
+                className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] outline-none"
+                placeholder="Enter Name..."
+                value={formData.student_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, student_name: e.target.value })
+                }
+              />
+            </div>
+
+            {/* Course Selection */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
+                Course
+              </label>
+              <select
+                required
+                className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:border-[#12066a] outline-none"
+                value={formData.course}
+                onChange={(e) =>
+                  setFormData({ ...formData, course: e.target.value })
+                }
+              >
+                <option value="">Select Course...</option>
+                {availableCourses.map((course, i) => (
+                  <option key={i} value={course}>
+                    {course}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Session & Issue Date Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
+                  Session
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none"
+                  placeholder="2025-26"
+                  value={formData.session}
+                  onChange={(e) =>
+                    setFormData({ ...formData, session: e.target.value })
+                  }
+                />
               </div>
-            ))}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-black mb-1.5 ml-1">
+                  Issue Date 
+                </label>
+                <input
+                  type="date" // 📅 Is se calendar open hoga
+                  required
+                  className="w-full px-5 py-3.5 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none"
+                  value={formData.issue_date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, issue_date: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#12066a] text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 hover:bg-[#997819] transition-all transform active:scale-[0.98] mt-4 disabled:opacity-50"
+              className="w-full bg-[#12066a] text-white py-5 rounded-2xl font-black text-lg shadow-xl hover:bg-[#997819] transition-all disabled:opacity-50 mt-4"
             >
               {loading ? "Processing..." : "Register Student Record"}
             </button>
