@@ -266,7 +266,7 @@ export default function Home() {
 
                       {/* Content */}
                       <div className="text-center mb-4">
-                        <h2 className="text-[29px] font-black text-[#997819] tracking-[0.03em]">
+                        <h2 className="text-[25px] font-black text-[#997819] tracking-[0.03em]">
                           Certified Professional in{" "}
                           <span className="text-[#997819]">
                             {studentData.course}
