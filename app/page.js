@@ -95,36 +95,42 @@ export default function Home() {
     );
   };
 
-  const handleDownload = async () => {
+const handleDownload = async () => {
     const element = document.getElementById("certificate-container");
     if (!element) return;
 
-    const toastId = toast.loading("Generating high-quality PDF...");
+    const toastId = toast.loading("Generating edge-to-edge PDF...");
 
     try {
       const dataUrl = await toPng(element, {
         quality: 1.0,
-        pixelRatio: 3, // High quality ke liye 3 rakhein
+        pixelRatio: 4, // Sharpness ke liye high rakhein
         cacheBust: true,
       });
 
-      // 'l' means Landscape, 'mm' means millimeters, 'a4' is the size
-      const pdf = new jsPDF("l", "mm", "a4");
+      // 1. Asli design ke dimensions pixels mein
+      const imgWidthPx = 900;
+      const imgHeightPx = 794;
 
-      // A4 Landscape dimensions in mm
-      const pdfWidth = 297;
-      const pdfHeight = 210;
+      // 2. Pixels ko millimeters mein convert karein (1px ≈ 0.264583mm)
+      const mmWidth = imgWidthPx * 0.264583;
+      const mmHeight = imgHeightPx * 0.264583;
 
-      // 🚀 AddImage: 0, 0 position se edge-to-edge fit karein
-      pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight);
+      // 3. Custom Size PDF banayein (A4 ke bajaye design size)
+      // Is se side par koi extra white space nahi bachegi
+      const pdf = new jsPDF({
+        orientation: mmWidth > mmHeight ? "l" : "p",
+        unit: "mm",
+        format: [mmWidth, mmHeight]
+      });
 
-      const fileName = `${studentData?.id}_${studentData?.name?.replace(
-        /\s+/g,
-        "_"
-      )}`;
+      // 4. Image ko zero margins ke sath fit karein
+      pdf.addImage(dataUrl, "PNG", 0, 0, mmWidth, mmHeight);
+
+      const fileName = `${studentData?.id}_${studentData?.name?.replace(/\s+/g, "_")}`;
       pdf.save(`${fileName}.pdf`);
 
-      toast.success("Certificate downloaded successfully! ✅", { id: toastId });
+      toast.success("Perfectly fitted certificate downloaded! ✅", { id: toastId });
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Download failed.", { id: toastId });
@@ -221,7 +227,7 @@ export default function Home() {
                   <div
                     className="relative bg-white shrink-0  overflow-hidden"
                     style={{
-                      width: "1123px", // A4 Landscape equivalent in pixels (at 96 DPI)
+                      width: "900px", // A4 Landscape equivalent in pixels (at 96 DPI)
                       height: "794px", // Exact A4 height
                       fontFamily: "'Times New Roman', serif",
                     }}
