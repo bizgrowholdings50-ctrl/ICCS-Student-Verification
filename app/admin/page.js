@@ -151,17 +151,17 @@ export default function ICCSAdminDashboard() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <form onSubmit={handleAdminLogin} className="w-full max-w-sm text-center">
-          <h2 className="text-3xl font-black text-[#12066a] mb-6 italic tracking-tighter uppercase">Master Access</h2>
+          <h2 className="text-3xl font-black text-[#12066a] mb-6 tracking-normal uppercase">Admin Access</h2>
           <input
             type="password"
-            placeholder="••••"
+            placeholder="Enter Password"
             value={adminPass}
             onChange={(e) => setAdminPass(e.target.value)}
-            className="w-full p-5 bg-slate-50 rounded-3xl mb-4 text-center border border-slate-100 outline-[#12066a] font-black tracking-[1rem] text-xl"
+            className="w-full p-5 bg-slate-50 rounded-3xl mb-4 text-center border border-slate-100 outline-[#12066a] font-black tracking-normal text-xl"
             autoFocus
           />
           <button type="submit" className="w-full bg-[#12066a] text-white py-5 rounded-3xl font-black shadow-lg hover:bg-[#b89146] transition-all">
-            Unlock Master Dashboard
+            Unlock Dashboard
           </button>
         </form>
       </div>

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
@@ -23,8 +24,8 @@ export default function Footer() {
 
           {/* Quick Links with Gold Hover */}
           <div className="flex justify-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em]">
-            <a href="#" className="hover:text-[#b89146] transition-colors duration-300">Verification</a>
-            <a href="#" className="hover:text-[#b89146] transition-colors duration-300">Privacy</a>
+            <Link href="/admin" className="hover:text-[#b89146] transition-colors duration-300">Verification</Link>
+            <Link href="https://iccs.uk/policies/" target="_blank" rel="noopener noreferrer" className="hover:text-[#b89146] transition-colors duration-300">Privacy</Link>
             <a href="#" className="hover:text-[#b89146] transition-colors duration-300">Support</a>
           </div>
 

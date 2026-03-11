@@ -83,7 +83,7 @@ useEffect(() => {
 
           {/* Right Side Buttons */}
           <div className="flex items-center gap-2 md:gap-3">
-            <Link href="https://iccs.uk/" target="_blank">
+            <Link href="https://iccs.uk/" target="_blank" rel="noopener noreferrer">
               <div className="text-[9px] md:text-[10px] font-bold text-[#1a1a5e] border border-[#b89146] px-3 py-2 rounded uppercase hover:bg-[#b89146] hover:text-white transition-all">
                 Website
               </div>

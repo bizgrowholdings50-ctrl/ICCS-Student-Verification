@@ -370,7 +370,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="h-96 flex flex-col items-center justify-start pt-20">
-              <p className="text-[#12066a] text-xl font-bold">
+              <p className="text-[#12066a] text-sm md:text-xl font-bold">
                 Check Your Certificate's Authenticity with ICCS
               </p>
             </div>
