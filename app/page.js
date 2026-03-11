@@ -12,7 +12,7 @@ export default function Home() {
   const [rollNo, setRollNo] = useState("");
   const [studentData, setStudentData] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const handleVerify = async () => {
     if (!rollNo) return alert("Please enter a Roll Number");
     setLoading(true);
@@ -95,7 +95,7 @@ export default function Home() {
     );
   };
 
-const handleDownload = async () => {
+  const handleDownload = async () => {
     const element = document.getElementById("certificate-container");
     if (!element) return;
 
@@ -121,16 +121,21 @@ const handleDownload = async () => {
       const pdf = new jsPDF({
         orientation: mmWidth > mmHeight ? "l" : "p",
         unit: "mm",
-        format: [mmWidth, mmHeight]
+        format: [mmWidth, mmHeight],
       });
 
       // 4. Image ko zero margins ke sath fit karein
       pdf.addImage(dataUrl, "PNG", 0, 0, mmWidth, mmHeight);
 
-      const fileName = `${studentData?.id}_${studentData?.name?.replace(/\s+/g, "_")}`;
+      const fileName = `${studentData?.id}_${studentData?.name?.replace(
+        /\s+/g,
+        "_"
+      )}`;
       pdf.save(`${fileName}.pdf`);
 
-      toast.success("Perfectly fitted certificate downloaded! ✅", { id: toastId });
+      toast.success("Perfectly fitted certificate downloaded! ✅", {
+        id: toastId,
+      });
     } catch (err) {
       console.error("PDF Error:", err);
       toast.error("Download failed.", { id: toastId });
@@ -228,7 +233,7 @@ const handleDownload = async () => {
                     className="relative bg-white shrink-0  overflow-hidden"
                     style={{
                       width: "900px", // A4 Landscape equivalent in pixels (at 96 DPI)
-                      height: "794px", // Exact A4 height
+                      height: "700px", // Exact A4 height
                       fontFamily: "'Times New Roman', serif",
                     }}
                   >
@@ -261,7 +266,7 @@ const handleDownload = async () => {
 
                       {/* Content */}
                       <div className="text-center mb-4">
-                        <h2 className="text-[29px] font-black text-[#997819] tracking-[0.05em]">
+                        <h2 className="text-[29px] font-black text-[#997819] tracking-[0.03em]">
                           Certified Professional in{" "}
                           <span className="text-[#997819]">
                             {studentData.course}
@@ -273,7 +278,7 @@ const handleDownload = async () => {
                         <p className="text-[#997819] text-[27px] font-black ">
                           This diploma is proudly awarded to
                         </p>
-                        <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-4 pb-6">
+                        <h2 className="text-4xl text-[#12066a] font-semibold font-serif pt-6 pb-1">
                           {studentData.name}
                         </h2>
                       </div>
