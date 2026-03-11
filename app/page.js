@@ -142,7 +142,7 @@ export default function Home() {
     }
   };
   const courseMap = {
-    "Diploma in IT Support": "DITS", // "Deploma" ko "Diploma" kiya
+    "Diploma in IT Support": "CPITS", // "Deploma" ko "Diploma" kiya
     "Supply Chain Management": "CPSCM",
     "Digital Marketing": "DDM",
     "Graphic Designing": "DGD",

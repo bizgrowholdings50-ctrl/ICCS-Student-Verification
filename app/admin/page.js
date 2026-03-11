@@ -16,8 +16,8 @@ export default function ICCSAdminDashboard() {
   const [newStaff, setNewStaff] = useState({ name: "", pin: "" });
 
   const coursesList = [
-    "Diploma in Information Technology (DIT)", 
-    "Supply Chain Management"
+    "Diploma in IT Support (CPITS)", 
+    "Supply Chain Management (CPSCM)",
   ];
 
   const [formData, setFormData] = useState({
