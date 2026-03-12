@@ -24,7 +24,7 @@ export default function Footer() {
 
           {/* Quick Links with Gold Hover */}
           <div className="flex justify-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em]">
-            <Link href="/admin" className="hover:text-[#b89146] transition-colors duration-300">Verification</Link>
+            <Link href="/admin" className="hover:text-[#b89146] transition-colors duration-300">Admin</Link>
             <Link href="https://iccs.uk/policies/" target="_blank" rel="noopener noreferrer" className="hover:text-[#b89146] transition-colors duration-300">Privacy</Link>
             <a href="#" className="hover:text-[#b89146] transition-colors duration-300">Support</a>
           </div>
