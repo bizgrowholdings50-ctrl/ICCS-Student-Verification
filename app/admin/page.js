@@ -14,7 +14,7 @@ export default function ICCSAdminDashboard() {
 
   const [staffList, setStaffList] = useState([]);
   const [newStaff, setNewStaff] = useState({ name: "", pin: "" });
-  const [editingStaffId, setEditingStaffId] = useState(null); // New state for staff editing
+  const [editingStaffId, setEditingStaffId] = useState(null);
 
   // Records Manager States
   const [allStudents, setAllStudents] = useState([]);
@@ -26,8 +26,11 @@ export default function ICCSAdminDashboard() {
     "SUPPLY CHAIN MANAGEMENT (CPSCM)",
   ];
 
+  // 🔹 Updated Initial State with Prefix and Suffix
   const [formData, setFormData] = useState({
-    roll_no: "",
+    id_prefix: "",    // Dropdown ke liye
+    roll_suffix: "",  // Number ke liye
+    roll_no: "",      // Database ke liye
     student_name: "",
     course: "",
     session: "2025-26",
@@ -114,7 +117,6 @@ export default function ICCSAdminDashboard() {
 
     try {
       if (editingStaffId) {
-        // UPDATE STAFF
         const { error } = await supabase
           .from("staff_access")
           .update({ name: newStaff.name, pin: newStaff.pin })
@@ -124,7 +126,6 @@ export default function ICCSAdminDashboard() {
         toast.success("Staff Details Updated!");
         setEditingStaffId(null);
       } else {
-        // ADD NEW STAFF
         const { error } = await supabase.from("staff_access").insert([newStaff]);
         if (error) throw error;
         toast.success("Staff Added Successfully!");
@@ -141,7 +142,6 @@ export default function ICCSAdminDashboard() {
   const startEditStaff = (staff) => {
     setEditingStaffId(staff.id);
     setNewStaff({ name: staff.name, pin: staff.pin });
-    toast.info(`Editing: ${staff.name}`);
   };
 
   const cancelStaffEdit = () => {
@@ -154,10 +154,7 @@ export default function ICCSAdminDashboard() {
       action: {
         label: "Remove",
         onClick: async () => {
-          const { error } = await supabase
-            .from("staff_access")
-            .delete()
-            .eq("id", id);
+          const { error } = await supabase.from("staff_access").delete().eq("id", id);
           if (!error) {
             fetchStaffWithCounts();
             toast.success("Staff Removed");
@@ -167,59 +164,29 @@ export default function ICCSAdminDashboard() {
     });
   };
 
-  // STUDENT MANAGEMENT LOGIC
-  const handleDeleteStudent = (id) => {
-    toast("Permanent Delete?", {
-      description: "Are you sure you want to remove this record?",
-      action: {
-        label: "Delete Now",
-        onClick: async () => {
-          setLoading(true);
-          try {
-            const { error } = await supabase
-              .from("student")
-              .delete()
-              .eq("id", Number(id));
-            if (error) throw error;
-            toast.success("Record removed from database");
-            fetchAllStudents();
-          } catch (err) {
-            toast.error("Failed to delete record");
-          } finally {
-            setLoading(false);
-          }
-        },
-      },
-      cancel: { label: "Cancel", onClick: () => toast.dismiss() },
-    });
-  };
-
-  const startEdit = (student) => {
-    setEditingId(student.id);
-    let formattedDateForInput = "";
-    if (student.issue_date) {
-      const d = new Date(student.issue_date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      formattedDateForInput = `${year}-${month}-${day}`;
-    }
-    setFormData({
-      roll_no: student.roll_no,
-      student_name: student.student_name,
-      course: student.course,
-      session: student.session || "2025-26",
-      issue_date: formattedDateForInput,
-    });
-    setActiveTab("student");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info("Ready to update details.");
-  };
-
+  // 🔹 STUDENT SUBMIT LOGIC WITH VALIDATION
+// 🔹 STUDENT SUBMIT LOGIC WITH 6-DIGIT VALIDATION
   const handleStudentSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.id_prefix) return toast.error("Select Certificate Prefix (DIS/SCM)");
+
+    // DIS Specific Validation: 026101 se niche allow nahi karega
+    if (formData.id_prefix === "ICCS-DIS-") {
+      const idNumber = parseInt(formData.roll_suffix, 10);
+      
+      // Check if it's less than 26101
+      if (isNaN(idNumber) || idNumber < 26101) {
+        return toast.error("DIS ID cannot be less than 026101");
+      }
+    }
+
     setLoading(true);
-    const upperRoll = formData.roll_no.toUpperCase();
+
+    // Padding Logic: Agar user "26101" likhe to usay "026101" bana dega (6 digits pure karne ke liye)
+    const paddedSuffix = formData.roll_suffix.toString().padStart(6, '0');
+    const fullRoll = `${formData.id_prefix}${paddedSuffix}`.toUpperCase();
+
     const dateObj = new Date(formData.issue_date);
     const formattedDate = dateObj
       .toLocaleDateString("en-GB", {
@@ -230,57 +197,101 @@ export default function ICCSAdminDashboard() {
       .replace(/ /g, "-");
 
     try {
-      if (editingId) {
-        const updatePayload = {
-          student_name: formData.student_name || "",
-          course: formData.course || "",
-          roll_no: upperRoll,
-          issue_date: formattedDate,
-          session: formData.session || "2025-26",
-          added_by: "ADMIN-EDITED",
-        };
-        const { data, error } = await supabase
-          .from("student")
-          .update(updatePayload)
-          .match({ id: editingId })
-          .select();
+      const payload = {
+        student_name: formData.student_name,
+        course: formData.course,
+        roll_no: fullRoll,
+        issue_date: formattedDate,
+        session: formData.session,
+        added_by: editingId ? "ADMIN-EDITED" : "ADMIN-MASTER",
+      };
 
+      if (editingId) {
+        const { error } = await supabase.from("student").update(payload).match({ id: editingId });
         if (error) throw error;
-        if (data && data.length > 0) {
-          toast.success("Database Updated Successfully!");
-          setEditingId(null);
-          setFormData({ roll_no: "", student_name: "", course: "", session: "2025-26", issue_date: "" });
-          fetchAllStudents();
-          setActiveTab("records");
-        }
+        toast.success("Record Updated!");
+        setEditingId(null);
+        setActiveTab("records");
       } else {
-        const { error } = await supabase.from("student").insert([
-          {
-            student_name: formData.student_name,
-            course: formData.course,
-            roll_no: upperRoll,
-            issue_date: formattedDate,
-            session: formData.session,
-            added_by: "ADMIN-MASTER",
-          },
-        ]);
+        const { error } = await supabase.from("student").insert([payload]);
         if (error) throw error;
         toast.success("New Student Saved!");
-        setFormData({ roll_no: "", student_name: "", course: "", session: "2025-26", issue_date: "" });
-        refreshData();
       }
+
+      setFormData({ id_prefix: "", roll_suffix: "", roll_no: "", student_name: "", course: "", session: "2025-26", issue_date: "" });
+      refreshData();
     } catch (err) {
-      toast.error(err.message || "Connection Error");
+      // 🔹 Duplicate ID Check
+      if (err.code === "23505") {
+        toast.error("This ID already exists! Please use a different number.");
+      } else {
+        toast.error(err.message || "Connection Error");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const startEdit = (student) => {
+    setEditingId(student.id);
+    
+    // Splitting existing ID for editor
+    let prefix = "";
+    let suffix = "";
+    if (student.roll_no.includes("DIS-")) {
+        prefix = "ICCS-DIS-";
+        suffix = student.roll_no.split("DIS-")[1];
+    } else if (student.roll_no.includes("SCM-")) {
+        prefix = "ICCS-SCM-";
+        suffix = student.roll_no.split("SCM-")[1];
+    }
+
+    let formattedDateForInput = "";
+    if (student.issue_date) {
+      const d = new Date(student.issue_date);
+      formattedDateForInput = d.toISOString().split('T')[0];
+    }
+
+    setFormData({
+      id_prefix: prefix,
+      roll_suffix: suffix,
+      roll_no: student.roll_no,
+      student_name: student.student_name,
+      course: student.course,
+      session: student.session || "2025-26",
+      issue_date: formattedDateForInput,
+    });
+    setActiveTab("student");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeleteStudent = (id) => {
+    toast("Permanent Delete?", {
+      description: "Are you sure you want to remove this record?",
+      action: {
+        label: "Delete Now",
+        onClick: async () => {
+          setLoading(true);
+          try {
+            const { error } = await supabase.from("student").delete().eq("id", Number(id));
+            if (error) throw error;
+            toast.success("Record removed");
+            fetchAllStudents();
+          } catch (err) {
+            toast.error("Failed to delete");
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    });
   };
 
   if (!isAdminAuth) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <form onSubmit={handleAdminLogin} className="w-full max-w-sm text-center">
-          <h2 className="text-3xl font-black text-[#12066a] mb-6 uppercase">Admin Access</h2>
+          <h2 className="text-3xl font-black text-[#12066a] mb-6 uppercase tracking-tighter italic">Admin Access</h2>
           <input
             type="password"
             placeholder="Enter Password"
@@ -289,7 +300,7 @@ export default function ICCSAdminDashboard() {
             className="w-full p-5 bg-slate-50 rounded-3xl mb-4 text-center border font-black text-xl"
             autoFocus
           />
-          <button type="submit" className="w-full bg-[#12066a] text-white py-5 rounded-3xl font-black shadow-lg">Unlock</button>
+          <button type="submit" className="w-full bg-[#12066a] text-white py-5 rounded-3xl font-black shadow-lg shadow-indigo-200">Unlock</button>
         </form>
       </div>
     );
@@ -298,10 +309,11 @@ export default function ICCSAdminDashboard() {
   return (
     <div className="min-h-screen bg-white p-4 md:p-10 flex flex-col items-center">
       <div className="w-full max-w-4xl flex justify-between items-center mb-8">
-        <div className="bg-[#12066a] px-4 py-2 rounded-xl text-white font-black text-[10px] uppercase italic">Admin Active</div>
-        <button onClick={handleLogout} className="text-red-500 font-black text-[10px] uppercase bg-red-50 px-5 py-2 rounded-xl">Logout</button>
+        <div className="bg-[#12066a] px-4 py-2 rounded-xl text-white font-black text-[10px] uppercase italic tracking-widest">Admin Active</div>
+        <button onClick={handleLogout} className="text-red-500 font-black text-[10px] uppercase bg-red-50 px-5 py-2 rounded-xl border border-red-100">Logout</button>
       </div>
 
+      {/* Navigation Tabs */}
       <div className="w-full max-w-xl flex bg-slate-100 p-2 rounded-[2.5rem] mb-10 shadow-inner">
         {["staff", "student", "records"].map((tab) => (
           <button
@@ -310,49 +322,33 @@ export default function ICCSAdminDashboard() {
               setActiveTab(tab);
               if (tab === "records") fetchAllStudents();
             }}
-            className={`flex-1 py-4 rounded-[2rem] font-black text-xs uppercase transition-all ${activeTab === tab ? "bg-[#12066a] text-white shadow-lg" : "text-slate-400"}`}
+            className={`flex-1 py-4 rounded-[2rem] font-black text-[10px] uppercase transition-all ${activeTab === tab ? "bg-[#12066a] text-white shadow-lg" : "text-slate-400"}`}
           >
-            {tab === "student" && editingId ? "Edit Mode" : tab.replace("staff", "Staff Control").replace("student", "Student Entry").replace("records", "Records List")}
+            {tab === "student" && editingId ? "Editing Record" : tab === "staff" ? "Staff Control" : tab === "student" ? "Student Entry" : "Records List"}
           </button>
         ))}
       </div>
 
       <div className="w-full max-w-4xl">
+        {/* STAFF TAB */}
         {activeTab === "staff" && (
           <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4">
             <form onSubmit={handleAddStaff} className="grid grid-cols-12 gap-3 mb-8">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={newStaff.name}
-                onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })}
-                className="col-span-6 p-4 bg-slate-100 rounded-2xl font-bold"
-                required
-              />
-              <input
-                type="text"
-                placeholder="PIN"
-                value={newStaff.pin}
-                maxLength={4}
-                onChange={(e) => setNewStaff({ ...newStaff, pin: e.target.value })}
-                className="col-span-3 p-4 bg-slate-100 rounded-2xl text-center font-black"
-                required
-              />
+              <input type="text" placeholder="Full Name" value={newStaff.name} onChange={(e) => setNewStaff({ ...newStaff, name: e.target.value })} className="col-span-6 p-4 bg-slate-100 rounded-2xl font-bold" required />
+              <input type="text" placeholder="PIN" value={newStaff.pin} maxLength={4} onChange={(e) => setNewStaff({ ...newStaff, pin: e.target.value })} className="col-span-3 p-4 bg-slate-100 rounded-2xl text-center font-black" required />
               <div className="col-span-3 flex gap-2">
                 <button type="submit" className={`flex-1 text-white rounded-2xl font-black text-sm ${editingStaffId ? 'bg-blue-600' : 'bg-[#12066a]'}`}>
                   {editingStaffId ? "SAVE" : "+"}
                 </button>
-                {editingStaffId && (
-                  <button type="button" onClick={cancelStaffEdit} className="flex-1 bg-red-50 text-red-500 rounded-2xl font-black text-xs">X</button>
-                )}
+                {editingStaffId && <button type="button" onClick={cancelStaffEdit} className="flex-1 bg-red-50 text-red-500 rounded-2xl font-black text-xs">X</button>}
               </div>
             </form>
             <div className="space-y-3">
               {staffList.map((s) => (
-                <div key={s.id} className="p-4 bg-white border border-slate-100 rounded-3xl flex justify-between items-center shadow-sm hover:border-blue-200 transition-all">
+                <div key={s.id} className="p-4 bg-white border border-slate-100 rounded-3xl flex justify-between items-center shadow-sm">
                   <div>
                     <p className="font-black text-[#12066a] leading-tight">{s.name}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase italic">PIN: {s.pin} • {s.count} Records</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">PIN: {s.pin} • {s.count} Entries</p>
                   </div>
                   <div className="flex gap-4">
                     <button onClick={() => startEditStaff(s)} className="text-blue-500 font-bold text-[9px] uppercase tracking-widest">Edit</button>
@@ -364,68 +360,102 @@ export default function ICCSAdminDashboard() {
           </div>
         )}
 
+        {/* STUDENT ENTRY TAB (WITH NEW PREFIX LOGIC) */}
         {activeTab === "student" && (
           <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4">
-            {editingId && (
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl text-blue-700 text-[10px] font-black uppercase flex justify-between items-center">
-                <span>Editing Record: {formData.roll_no}</span>
-                <button onClick={() => { setEditingId(null); setFormData({ roll_no: "", student_name: "", course: "", session: "2025-26", issue_date: "" }); }} className="underline italic">Cancel</button>
-              </div>
-            )}
             <form onSubmit={handleStudentSubmit} className="space-y-4">
-              <input type="text" placeholder="Roll No / Certificate ID" value={formData.roll_no} onChange={(e) => setFormData({ ...formData, roll_no: e.target.value })} className="w-full p-5 bg-slate-100 rounded-3xl font-bold uppercase" required />
+              
+              {/* Certificate ID Logic Area */}
+              <div className="grid grid-cols-12 gap-3">
+                <select 
+                  value={formData.id_prefix} 
+                  onChange={(e) => setFormData({ ...formData, id_prefix: e.target.value })}
+                  className="col-span-5 p-5 bg-blue-50 border-2 border-blue-100 rounded-3xl font-black text-[#12066a] outline-none"
+                  required
+                >
+                  <option value="">PREFIX...</option>
+                  <option value="ICCS-DIS-">ICCS-DIS- (Depmoma in IT)</option>
+                  <option value="ICCS-SCM-">ICCS-SCM- (Supply Chain)</option>
+                </select>
+
+                <input 
+                  type="number" 
+                  placeholder="ID Number (e.g. 26101)" 
+                  value={formData.roll_suffix} 
+                  onChange={(e) => setFormData({ ...formData, roll_suffix: e.target.value })} 
+                  disabled={!formData.id_prefix}
+                  className="col-span-7 p-5 bg-slate-100 rounded-3xl font-bold disabled:opacity-50" 
+                  required 
+                />
+              </div>
+
+              {/* Preview of full concatenated ID */}
+              {formData.id_prefix && formData.roll_suffix && (
+                <div className="px-5 py-2 bg-indigo-50/50 rounded-2xl">
+                  <p className="text-[10px] font-black text-indigo-500 uppercase italic">
+                    Database will save as: {formData.id_prefix}{formData.roll_suffix}
+                  </p>
+                </div>
+              )}
+
               <input type="text" placeholder="Student Full Name" value={formData.student_name} onChange={(e) => setFormData({ ...formData, student_name: e.target.value })} className="w-full p-5 bg-slate-100 rounded-3xl font-bold" required />
+              
               <select value={formData.course} onChange={(e) => setFormData({ ...formData, course: e.target.value })} className="w-full p-5 bg-slate-100 rounded-3xl font-bold outline-[#12066a] appearance-none" required>
                 <option value="">Select Course...</option>
                 {coursesList.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-50 rounded-3xl text-center font-bold text-slate-400 border border-dashed border-slate-200">{formData.session}</div>
                 <input type="date" value={formData.issue_date} onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })} className="p-5 bg-slate-100 rounded-3xl font-bold outline-[#12066a] w-full" required />
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-[#12066a] text-white py-6 rounded-[2.5rem] font-black text-lg shadow-lg">
+
+              <button type="submit" disabled={loading} className="w-full bg-[#12066a] text-white py-6 rounded-[2.5rem] font-black text-lg shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
                 {loading ? "Processing..." : editingId ? "Update Record" : "Save Record"}
               </button>
             </form>
           </div>
         )}
 
+        {/* RECORDS LIST TAB */}
         {activeTab === "records" && (
           <div className="animate-in fade-in slide-in-from-bottom-4">
-            <input type="text" placeholder="Search by name or roll number..." className="w-full p-4 mb-6 bg-slate-50 border border-slate-100 rounded-2xl font-bold" onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} />
-            <div className="bg-white border border-slate-100 rounded-3xl overflow-x-auto shadow-sm">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 text-[10px] font-black uppercase text-[#12066a] border-b">
-                  <tr>
-                    <th className="p-5">Student / ID</th>
-                    <th className="p-5">Course</th>
-                    <th className="p-5">Issue Date</th>
-                    <th className="p-5 text-right">Added By</th>
-                    <th className="p-5 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {allStudents.filter(s => s.student_name.toLowerCase().includes(searchTerm) || s.roll_no.toLowerCase().includes(searchTerm)).map((s) => (
-                    <tr key={s.id} className="text-sm hover:bg-slate-50 transition-all font-medium">
-                      <td className="p-5">
-                        <p className="font-bold text-[#12066a] leading-tight">{s.student_name}</p>
-                        <p className="text-[9px] text-slate-700 font-bold uppercase">{s.roll_no}</p>
-                      </td>
-                      <td className="p-5">
-                        <span className="text-[9px] font-black uppercase text-white bg-[#12066a] px-3 py-1.5 rounded-lg inline-block">{s.course}</span>
-                      </td>
-                      <td className="p-5 text-slate-700 font-bold text-[11px]">{s.issue_date}</td>
-                      <td className="p-5 text-right font-black text-[9px] uppercase text-slate-500">{s.added_by}</td>
-                      <td className="p-5 text-right">
-                        <div className="flex justify-end gap-3">
-                          <button onClick={() => startEdit(s)} className="text-blue-500 font-black text-[10px] uppercase">Edit</button>
-                          <button onClick={() => handleDeleteStudent(s.id)} className="text-red-400 font-black text-[10px] uppercase">Del</button>
-                        </div>
-                      </td>
+            <input type="text" placeholder="Search by name or roll number..." className="w-full p-4 mb-6 bg-slate-50 border border-slate-100 rounded-2xl font-bold shadow-sm" onChange={(e) => setSearchTerm(e.target.value.toLowerCase())} />
+            <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-slate-50 text-[10px] font-black uppercase text-[#12066a] border-b">
+                    <tr>
+                      <th className="p-5">Student / ID</th>
+                      <th className="p-5">Course</th>
+                      <th className="p-5">Issue Date</th>
+                      <th className="p-5 text-right">Added By</th>
+                      <th className="p-5 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {allStudents.filter(s => s.student_name.toLowerCase().includes(searchTerm) || s.roll_no.toLowerCase().includes(searchTerm)).map((s) => (
+                      <tr key={s.id} className="text-sm hover:bg-slate-50 transition-all font-medium">
+                        <td className="p-5">
+                          <p className="font-bold text-[#12066a] leading-tight">{s.student_name}</p>
+                          <p className="text-[9px] text-slate-700 font-bold uppercase tracking-tight">{s.roll_no}</p>
+                        </td>
+                        <td className="p-5">
+                          <span className="text-[8px] font-black uppercase text-white bg-[#12066a] px-3 py-1.5 rounded-lg inline-block tracking-tighter">{s.course}</span>
+                        </td>
+                        <td className="p-5 text-slate-700 font-bold text-[11px] italic">{s.issue_date}</td>
+                        <td className="p-5 text-right font-black text-[9px] uppercase text-slate-400">{s.added_by}</td>
+                        <td className="p-5 text-right">
+                          <div className="flex justify-end gap-3">
+                            <button onClick={() => startEdit(s)} className="text-blue-500 font-black text-[10px] uppercase">Edit</button>
+                            <button onClick={() => handleDeleteStudent(s.id)} className="text-red-400 font-black text-[10px] uppercase">Del</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
